@@ -3,7 +3,13 @@ from rest_framework import serializers
 from .models import DiagnosisCode
 
 
-class DiagnosisCodeSerializer(serializers.ModelSerializer):
+class FullDiagnosisCodeDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiagnosisCode
+        fields = "__all__"
+
+
+class CreateDiagnosisCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiagnosisCode
         exclude = [

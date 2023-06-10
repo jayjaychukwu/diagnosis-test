@@ -25,4 +25,5 @@ class DiagnosisCodeTestSetup(TestCase):
         cls.client = APIClient()
 
         # urls
-        cls.diagnosis_code_list_create_url = reverse("diagnosis-code-list-create")
+        cls.diagnosis_code_list_url = reverse("diagnosis-code-list")
+        cls.diagnosis_code_create_url = reverse("diagnosis-code-create")
