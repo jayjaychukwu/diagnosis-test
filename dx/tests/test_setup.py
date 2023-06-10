@@ -24,6 +24,19 @@ class DiagnosisCodeTestSetup(TestCase):
         # set up the client
         cls.client = APIClient()
 
+        # payload update data
+        cls.payload = {
+            "category_code": "B0",
+            "diagnosis_code": "5678",
+            "full_code": "B05678",
+            "abbreviated_description": "Updated Description",
+            "full_description": "Updated Full Description",
+            "category_title": "Updated Category Title",
+        }
+
         # urls
         cls.diagnosis_code_list_url = reverse("diagnosis-code-list")
         cls.diagnosis_code_create_url = reverse("diagnosis-code-create")
+        cls.diagnosis_code_get_update_delete_url = reverse(
+            "diagnosis-code-get-update-delete", kwargs={"pk": cls.diagnosis_code.id}
+        )
