@@ -6,7 +6,6 @@ from django.test import TestCase
 
 from ..models import DiagnosisCode
 from ..utils import process_csv_file, send_upload_notification
-from .test_setup import DiagnosisCodeTestSetup
 
 
 class ProcessCSVFileTestCase(TestCase):

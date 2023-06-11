@@ -1,5 +1,3 @@
-import csv
-
 from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_control, cache_page
