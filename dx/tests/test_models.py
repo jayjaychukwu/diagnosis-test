@@ -2,7 +2,6 @@ from datetime import datetime
 
 from django.test import TestCase
 
-from ..models import DiagnosisCode
 from .test_setup import DiagnosisCodeTestSetup
 
 
