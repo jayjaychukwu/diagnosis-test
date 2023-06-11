@@ -1,5 +1,7 @@
 import json
+from io import BytesIO
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
 from ..models import DiagnosisCode
@@ -48,7 +50,6 @@ class DiagnosisCodeAPITest(DiagnosisCodeTestSetup):
     def test_put_diagnosis_code(self):
         url = self.diagnosis_code_get_update_delete_url
         response = self.client.put(url, data=self.payload)
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertNotEqual(response.data.get("detail"), ["PUT"])
 
@@ -57,3 +58,43 @@ class DiagnosisCodeAPITest(DiagnosisCodeTestSetup):
         self.assertNotEqual(
             updated_diagnosis_code.abbreviated_description, self.payload.get("abbreviated_description")
         )
+
+
+class DiagnosisCodeUploadAPIViewTest(DiagnosisCodeTestSetup):
+    def test_post_valid_csv_file(self):
+        # open the CSV file
+        with open(self.valid_csv_file_path, "rb") as file:
+            file_content = file.read()
+
+        # create a file-like object using BytesIO
+        file_obj = BytesIO(file_content)
+
+        # creata a SimpleUploadedFile using the file-like object
+        uploaded_file = SimpleUploadedFile("valid_test.csv", file_obj.read(), content_type="text/csv")
+
+        # data
+        data = {"csv_file": uploaded_file}
+
+        # create a request with the csv file
+        response = self.client.post(self.diagnosis_upload_url, data, format="multipart")
+
+        # assert the response status code
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_invalid_csv_file(self):
+        csv_data = b"column1,column2,column3\nvalue1,value2,value3\n"
+
+        file_obj = BytesIO(csv_data)
+
+        # Create a SimpleUploadedFile using the file-like object
+        uploaded_file = SimpleUploadedFile("test.csv", file_obj.read(), content_type="text/csv")
+
+        # data
+        data = {"csv_file": uploaded_file}
+        # request
+        response = self.client.post(self.diagnosis_upload_url, data, format="multipart")
+
+        # Assert the response status code
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Assert that the response contains an error message indicating an invalid CSV file format
+        self.assertEqual(response.data, {"error": "invalid CSV file format"})

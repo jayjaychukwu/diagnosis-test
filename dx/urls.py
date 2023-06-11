@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     DiagnosisCodeGetUpdateDeleteAPIView,
     DiagnosisCodeListAPIView,
+    DiagnosisCodeUploadAPIView,
     DiagnosisCreateAPIView,
 )
 
@@ -14,4 +15,5 @@ urlpatterns = [
         DiagnosisCodeGetUpdateDeleteAPIView.as_view(),
         name="diagnosis-code-get-update-delete",
     ),
+    path("diagnosis-codes/upload/", DiagnosisCodeUploadAPIView.as_view(), name="diagnosis-code-upload"),
 ]

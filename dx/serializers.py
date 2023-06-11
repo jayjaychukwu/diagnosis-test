@@ -15,3 +15,7 @@ class CreateDiagnosisCodeSerializer(serializers.ModelSerializer):
         exclude = [
             "icd_version",
         ]
+
+
+class DiagnosisCodeCSVSerializer(serializers.Serializer):
+    csv_file = serializers.FileField()

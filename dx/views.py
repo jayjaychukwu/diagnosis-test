@@ -1,14 +1,20 @@
+import csv
+
+from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_control, cache_page
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from .models import DiagnosisCode
 from .serializers import (
     CreateDiagnosisCodeSerializer,
+    DiagnosisCodeCSVSerializer,
     FullDiagnosisCodeDetailsSerializer,
 )
+from .utils import InvalidCSVFormatError, process_csv_file
 
 
 class DiagnosisCodeListAPIView(generics.ListAPIView):
@@ -56,3 +62,31 @@ class DiagnosisCodeGetUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView)
     @swagger_auto_schema(auto_schema=None)
     def put(self, request, *args, **kwargs):
         return self.http_method_not_allowed(request, *args, **kwargs)
+
+
+class DiagnosisCodeUploadAPIView(generics.GenericAPIView):
+    serializer_class = DiagnosisCodeCSVSerializer
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            csv_file = serializer.validated_data.get("csv_file")
+
+            try:
+                # process the CSV file and create diagnosis code records
+                with transaction.atomic():
+                    # call the method to process the file
+                    process_csv_file(uploaded_file=csv_file)
+                return Response(
+                    {
+                        "message": "CSV file uploaded and processed succesfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+            except InvalidCSVFormatError:
+                return Response({"error": "invalid CSV file format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

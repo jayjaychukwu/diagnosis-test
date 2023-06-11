@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -24,6 +24,9 @@ class DiagnosisCodeTestSetup(TestCase):
         # set up the client
         cls.client = APIClient()
 
+        # set up factory
+        cls.factory = RequestFactory()
+
         # payload update data
         cls.payload = {
             "category_code": "B0",
@@ -40,3 +43,7 @@ class DiagnosisCodeTestSetup(TestCase):
         cls.diagnosis_code_get_update_delete_url = reverse(
             "diagnosis-code-get-update-delete", kwargs={"pk": cls.diagnosis_code.id}
         )
+        cls.diagnosis_upload_url = reverse("diagnosis-code-upload")
+
+        # path to test files
+        cls.valid_csv_file_path = "dx/tests/test_file.csv"
