@@ -9,9 +9,11 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
 
 ## Setup
 
-1. Clone the repository:
+1. Clone the repository into a folder of your choice:
 
-   git clone the [project](https://github.com/jayjaychukwu/diagnosis-test.git)
+   ```shell
+   git clone https://github.com/jayjaychukwu/diagnosis-test.git
+   ```
 
 2. Create a .env file in the project root directory and set the following environment variables, please adjust the values to fit your environment:
 
@@ -21,6 +23,7 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
     DB_NAME=<a-database-name>
     DB_USER=postgres
     DB_PASSWORD=postgres
+    ```
 
 3. Spin up the project using Docker Compose:
    
@@ -30,7 +33,7 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
    ```
    and spin up another terminal to run the next set of commands or you run it in the background using
    ```shell
-   docker-compose up -d --build
+   docker-compose up -d
    ```
 
 4. Create a database with the same value as in environment variable, DB_NAME
@@ -39,7 +42,7 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
    ```shell
     docker ps
     ```
-    it should be something like "diagnosis_db_1".
+    it should be something like <project_name>_db_1. Example: "diagnosis-test_db_1".
 
     Then run this command to create the database
     ```shell
@@ -52,7 +55,19 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
     ```
     and check if the database name is in the list of databases.
 
-5. Make migrations for the dx app and migrate
+5.  Restart the web service for the update to take effect
+    ```shell
+    docker stop <project_name>_web_1
+    docker start <project_name>_web_1
+    ```
+
+    or you could just stop all the services and spin it up again
+    ```shell
+    docker-compose down
+    docker-compose up -d
+    ```
+
+6. Make migrations for the dx app and migrate
    ```shell
    docker-compose run web python manage.py makemigrations dx
    docker-compose run web python manage.py migrate
@@ -96,4 +111,6 @@ By employing caching and utilizing transaction atomicity, the project optimizes 
 
 
 ## Support and Feedback
+- Remember to always spin down your docker containers after you are done because they can consume a lot of memory.
+
 Please feel free to reach out to me or raise an Issue if you run into any problems running this project.
