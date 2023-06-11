@@ -33,7 +33,7 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
    ```
    and spin up another terminal to run the next set of commands or you run it in the background using
    ```shell
-   docker-compose up -d
+   docker-compose up -d --build
    ```
 
 4. Create a database with the same value as in environment variable, DB_NAME
@@ -64,7 +64,7 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
     or you could just stop all the services and spin it up again
     ```shell
     docker-compose down
-    docker-compose up -d
+    docker-compose up -d --build
     ```
 
 6. Make migrations for the dx app and migrate
