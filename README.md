@@ -11,7 +11,6 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
 
 1. Clone the repository:
 
-   ```shell
    git clone the [project](https://github.com/jayjaychukwu/diagnosis-test.git)
 
 2. Create a .env file in the project root directory and set the following environment variables, please adjust the values to fit your environment:
@@ -34,7 +33,7 @@ This is a RESTful API to utilize an internationally recognized set of diagnosis 
    docker-compose up -d --build
    ```
 
-4. Create a database with the same value in DB_NAME
+4. Create a database with the same value as in environment variable, DB_NAME
    
    obtain the name of the database container running using the command:
    ```shell
