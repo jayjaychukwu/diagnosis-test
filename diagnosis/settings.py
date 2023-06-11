@@ -130,3 +130,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
     "NON_FIELD_ERRORS_KEY": "error",
 }
+
+# Email Backend, Using the console
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

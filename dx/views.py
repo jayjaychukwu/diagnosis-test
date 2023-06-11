@@ -14,6 +14,7 @@ from .serializers import (
     DiagnosisCodeCSVSerializer,
     FullDiagnosisCodeDetailsSerializer,
 )
+from .signals import file_uploaded_signal
 from .utils import InvalidCSVFormatError, process_csv_file
 
 
@@ -73,12 +74,20 @@ class DiagnosisCodeUploadAPIView(generics.GenericAPIView):
 
         if serializer.is_valid():
             csv_file = serializer.validated_data.get("csv_file")
+            user_email = serializer.validated_data.get("email")
 
             try:
                 # process the CSV file and create diagnosis code records
                 with transaction.atomic():
-                    # call the method to process the file
+                    # call the function to process the file
                     process_csv_file(uploaded_file=csv_file)
+
+                    # emit the file_uploaded signal
+                    file_uploaded_signal.send(
+                        sender=self.__class__,
+                        user_email=user_email,
+                        uploaded_file_name=csv_file.name,
+                    )
                 return Response(
                     {
                         "message": "CSV file uploaded and processed succesfully",

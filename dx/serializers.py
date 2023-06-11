@@ -18,4 +18,5 @@ class CreateDiagnosisCodeSerializer(serializers.ModelSerializer):
 
 
 class DiagnosisCodeCSVSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     csv_file = serializers.FileField()

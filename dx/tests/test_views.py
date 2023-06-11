@@ -1,6 +1,7 @@
 import json
 from io import BytesIO
 
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
@@ -61,7 +62,7 @@ class DiagnosisCodeAPITest(DiagnosisCodeTestSetup):
 
 
 class DiagnosisCodeUploadAPIViewTest(DiagnosisCodeTestSetup):
-    def test_post_valid_csv_file(self):
+    def setUp(self) -> None:
         # open the CSV file
         with open(self.valid_csv_file_path, "rb") as file:
             file_content = file.read()
@@ -69,17 +70,23 @@ class DiagnosisCodeUploadAPIViewTest(DiagnosisCodeTestSetup):
         # create a file-like object using BytesIO
         file_obj = BytesIO(file_content)
 
-        # creata a SimpleUploadedFile using the file-like object
-        uploaded_file = SimpleUploadedFile("valid_test.csv", file_obj.read(), content_type="text/csv")
+        # create a SimpleUploadedFile using the file-like object
+        self.valid_uploaded_file = SimpleUploadedFile("valid_test.csv", file_obj.read(), content_type="text/csv")
 
+        return super().setUp()
+
+    def test_post_valid_csv_file(self):
         # data
-        data = {"csv_file": uploaded_file}
+        data = {"csv_file": self.valid_uploaded_file, "email": "testuser@mail.com"}
 
         # create a request with the csv file
         response = self.client.post(self.diagnosis_upload_url, data, format="multipart")
 
         # assert the response status code
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Assert that the response contains an error message indicating an invalid CSV file format
+        self.assertEqual(response.data, {"message": "CSV file uploaded and processed succesfully"})
 
     def test_post_invalid_csv_file(self):
         csv_data = b"column1,column2,column3\nvalue1,value2,value3\n"
@@ -90,7 +97,7 @@ class DiagnosisCodeUploadAPIViewTest(DiagnosisCodeTestSetup):
         uploaded_file = SimpleUploadedFile("test.csv", file_obj.read(), content_type="text/csv")
 
         # data
-        data = {"csv_file": uploaded_file}
+        data = {"csv_file": uploaded_file, "email": "testuser@mail.com"}
         # request
         response = self.client.post(self.diagnosis_upload_url, data, format="multipart")
 
@@ -98,3 +105,20 @@ class DiagnosisCodeUploadAPIViewTest(DiagnosisCodeTestSetup):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # Assert that the response contains an error message indicating an invalid CSV file format
         self.assertEqual(response.data, {"error": "invalid CSV file format"})
+
+    def test_send_upload_notification(self):
+        # data
+        data = {"csv_file": self.valid_uploaded_file, "email": "testuser@mail.com"}
+
+        # create a request with the csv file
+        response = self.client.post(self.diagnosis_upload_url, data, format="multipart")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Upload Notification")
+        self.assertEqual(
+            mail.outbox[0].body, f"Your file '{self.valid_uploaded_file.name}' was successfully uploaded."
+        )
+        self.assertEqual(
+            mail.outbox[0].from_email, "no-reply@pharmaceuticals.com"
+        )  # Adjust the expected sender email address
+        self.assertEqual(mail.outbox[0].to, [data.get("email")])

@@ -1,6 +1,10 @@
 import csv
 
+from django.core.mail import send_mail
+from django.dispatch import receiver
+
 from .models import DiagnosisCode
+from .signals import file_uploaded_signal
 
 
 class InvalidCSVFormatError(Exception):
@@ -44,3 +48,16 @@ def process_csv_file(uploaded_file=None, file_path=None):
         DiagnosisCode.objects.bulk_create(instances)
     except csv.Error:
         raise InvalidCSVFormatError("Invalid CSV file format")
+
+
+@receiver(file_uploaded_signal)
+def send_upload_notification(sender, **kwargs):
+    user_email = kwargs.get("user_email")
+    uploaded_file_name = kwargs.get("uploaded_file_name")
+
+    subject = "Upload Notification"
+    message = f"Your file '{uploaded_file_name}' was successfully uploaded."
+    from_email = "no-reply@pharmaceuticals.com"
+    recipient_list = [user_email]
+
+    send_mail(subject, message, from_email, recipient_list)

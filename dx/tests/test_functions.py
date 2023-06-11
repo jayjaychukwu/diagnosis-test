@@ -1,10 +1,11 @@
 import io
 
+from django.core import mail
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import TestCase
 
 from ..models import DiagnosisCode
-from ..utils import process_csv_file
+from ..utils import process_csv_file, send_upload_notification
 from .test_setup import DiagnosisCodeTestSetup
 
 
@@ -28,3 +29,17 @@ class ProcessCSVFileTestCase(TestCase):
 
         # assert that the DiagnosisCode instances have been created
         self.assertEqual(DiagnosisCode.objects.count(), 3)
+
+
+class SendUploadNotificationTestCase(TestCase):
+    def test_send_upload_notification(self):
+        user_email = "user@example.com"
+        uploaded_file_name = "diagnosis_codes.csv"
+
+        send_upload_notification(sender=None, user_email=user_email, uploaded_file_name=uploaded_file_name)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Upload Notification")
+        self.assertEqual(mail.outbox[0].body, f"Your file '{uploaded_file_name}' was successfully uploaded.")
+        self.assertEqual(mail.outbox[0].from_email, "no-reply@pharmaceuticals.com")
+        self.assertEqual(mail.outbox[0].to, [user_email])
