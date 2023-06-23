@@ -13,14 +13,14 @@ from .serializers import (
     FullDiagnosisCodeDetailsSerializer,
 )
 from .signals import file_uploaded_signal
-from .utils import InvalidCSVFormatError, process_csv_file
+from .utils import InvalidCSVFormatError, process_csv_file, save_diagnosis_codes
 
 
 class DiagnosisCodeListAPIView(generics.ListAPIView):
     queryset = DiagnosisCode.objects.order_by("id")
     serializer_class = FullDiagnosisCodeDetailsSerializer
 
-    # cache the list for 20 seconds anf set max-age directive to 30 seconds
+    # cache the list for 20 seconds and set max-age directive to 30 seconds
     @method_decorator(cache_page(20))
     @method_decorator(cache_control(max_age=30))
     def list(self, request, *args, **kwargs):
@@ -76,16 +76,19 @@ class DiagnosisCodeUploadAPIView(generics.GenericAPIView):
 
             try:
                 # process the CSV file and create diagnosis code records
-                with transaction.atomic():
-                    # call the function to process the file
-                    process_csv_file(uploaded_file=csv_file)
 
-                    # emit the file_uploaded signal
-                    file_uploaded_signal.send(
-                        sender=self.__class__,
-                        user_email=user_email,
-                        uploaded_file_name=csv_file.name,
-                    )
+                # call the function to process the file
+                diagnosis_code_objects = process_csv_file(uploaded_file=csv_file)
+
+                with transaction.atomic():
+                    save_diagnosis_codes(diagnosis_codes=diagnosis_code_objects)
+
+                # emit the file_uploaded signal
+                file_uploaded_signal.send(
+                    sender=self.__class__,
+                    user_email=user_email,
+                    uploaded_file_name=csv_file.name,
+                )
                 return Response(
                     {
                         "message": "CSV file uploaded and processed succesfully",

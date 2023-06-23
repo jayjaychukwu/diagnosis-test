@@ -1,8 +1,9 @@
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from ...utils import InvalidCSVFormatError, process_csv_file
+from ...models import DiagnosisCode
+from ...utils import InvalidCSVFormatError, process_csv_file, save_diagnosis_codes
 
 
 class Command(BaseCommand):
@@ -19,7 +20,8 @@ class Command(BaseCommand):
             return
 
         try:
-            process_csv_file(file_path=csv_file_path)
+            diagnosis_code_records: List[DiagnosisCode] = process_csv_file(file_path=csv_file_path)
+            save_diagnosis_codes(diagnosis_codes=diagnosis_code_records)
             self.stdout.write(self.style.SUCCESS("DiagnosisCode records created successfully"))
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR("CSV file not found"))
